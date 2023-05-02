@@ -279,10 +279,10 @@ def gen_term(argv):
 
     if args.stemmer == 'porter':
         stemmer = PorterStemmer()
-        print >>sys.stderr, 'use Porter stemmer'
+        print ('use Porter stemmer', file=sys.stderr)
     elif args.stemmer == 'krovetz':
         stemmer = KrovetzStemmer() # this is default
-        print >>sys.stderr, 'use Krovetz stemmer'
+        print ('use Krovetz stemmer', file=sys.stderr)
     else:
         parser.error('must specify the stemmer with --stemmer')
 
@@ -331,10 +331,10 @@ def gen_freqstats(argv):
 
     if IndriIndex.is_valid_path(args.index_path):
         index = IndriIndex(args.index_path)
-        print >>sys.stderr, 'use Indri index'
+        print ('use Indri index', file=sys.stderr)
     elif GalagoIndex.is_valid_path(args.index_path):
         index = GalagoIndex(args.index_path, args.index_part)
-        print >>sys.stderr, 'use Galago index'
+        print ('use Galago index', file=sys.stderr)
     else:
         parser.error('must specify a valid Indri/Galago index')
 
@@ -344,6 +344,6 @@ def gen_freqstats(argv):
     for text, _ in model.load_sentences('sentences_stem'):
         term_set.update(text.split())
 
-    print >>sys.stderr, 'found {} stems'.format(len(term_set))
+    print ('found {} stems'.format(len(term_set)), file=sys.stderr)
 
     IndexDump.dump(model.get_path('freq_stats'), index, term_set)

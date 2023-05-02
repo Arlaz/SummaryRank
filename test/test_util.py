@@ -1,10 +1,10 @@
 #pylint: skip-file
-import unittest2
+import unittest
 import random
 
 from summaryrank.util import unique, subset, CountIndicator
 
-class TestUtil(unittest2.TestCase):
+class TestUtil(unittest.TestCase):
     def test_unique(self):
         for _ in range(100):
             seq = [random.randrange(10) for _ in range(50)]

@@ -51,12 +51,12 @@ def check_consistency(argv):
                                 majority_rel = rel
 
                         for s in group:
-                            print '{docno}\t{id}\t{rel}'.format(docno=s['docno'],
+                            print('{docno}\t{id}\t{rel}'.format(docno=s['docno'],
                                                                 id=s['id'],
-                                                                rel=majority_rel)
+                                                                rel=majority_rel))
                     else:
                         for s in group:
-                            print u'{sentence_id:24s}\t{rel}\t{sentence}'.format(**s).encode('utf8')
+                            print(u'{sentence_id:24s}\t{rel}\t{sentence}'.format(**s).encode('utf8'))
             current_qid = metadata['qid']
             pool = dict()
 
@@ -100,15 +100,15 @@ def fix_trectext(argv):
                 docno, id_, rel = line.split()
                 fix[(docno, int(id_))] = int(rel)
 
-    print '<?xml version="1.0" encoding="UTF-8"?>'
-    print '<ROOT>'
+    print('<?xml version="1.0" encoding="UTF-8"?>')
+    print('<ROOT>')
     for document, metadata in trectext.documents():
         for i in range(len(document)):
             m = document[i][1]
             if (m['docno'], m['id']) in fix:
                 document[i][1]['rel'] = fix[(m['docno'], m['id'])]
         summaryrank.trectext.print_document(document, metadata)
-    print '</ROOT>'
+    print('</ROOT>')
 
 
 def fix_trectext2(argv):
@@ -145,8 +145,8 @@ def fix_trectext2(argv):
     documents = None
     texts = None
 
-    print '<?xml version="1.0" encoding="UTF-8"?>'
-    print '<ROOT>'
+    print('<?xml version="1.0" encoding="UTF-8"?>')
+    print('<ROOT>')
     for document, metadata in trectext.documents():
         if qid != metadata['qid']:
             documents = []
@@ -160,8 +160,8 @@ def fix_trectext2(argv):
                 true_score = difflib.SequenceMatcher(
                     None, text, text_).ratio()
                 if true_score > args.threshold:
-                    print >>sys.stderr, '{} ({} with {})'.format(
-                        metadata['docno'], true_score, documents[i][1]['docno'])
+                    print('{} ({} with {})'.format(
+                        metadata['docno'], true_score, documents[i][1]['docno']), file=sys.stderr)
                     valid = False
                     break
 
@@ -171,7 +171,7 @@ def fix_trectext2(argv):
 
         if valid:
             summaryrank.trectext.print_document(document, metadata, charset=args.charset)
-    print '</ROOT>'
+    print('</ROOT>')
 
 
 def print_document(document, metadata, charset='utf8'):
@@ -187,11 +187,11 @@ def print_document(document, metadata, charset='utf8'):
     for sentence, sentence_metadata in document:
         if current_rel != sentence_metadata['rel']:
             if current_rel is not None:
-                print '</{}>'.format(RELEVANCE_LABELS[current_rel])
+                print('</{}>'.format(RELEVANCE_LABELS[current_rel]))
             current_rel = sentence_metadata['rel']
-            print '<{}>'.format(RELEVANCE_LABELS[current_rel])
+            print('<{}>'.format(RELEVANCE_LABELS[current_rel]))
         sentence = escape(sentence)
-        print u'<SENTENCE>{}</SENTENCE>'.format(sentence).encode(charset)
-    print '</{}>'.format(RELEVANCE_LABELS[current_rel])
+        print(u'<SENTENCE>{}</SENTENCE>'.format(sentence).encode(charset))
+    print('</{}>'.format(RELEVANCE_LABELS[current_rel]))
     print('</TEXT>\n' 
           '</DOC>')

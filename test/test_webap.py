@@ -1,11 +1,11 @@
 #pylint: skip-file
-import unittest2
-from StringIO import StringIO
+import unittest
+from io import StringIO
 
 from summaryrank import webap
 
 
-class TestWebAPEmptyXML(unittest2.TestCase):
+class TestWebAPEmptyXML(unittest.TestCase):
     def setUp(self):
         self.data = r'''
         <?xml version="1.0"?>
@@ -17,7 +17,7 @@ class TestWebAPEmptyXML(unittest2.TestCase):
         self.assertEqual(len(list(webap.get_sentences(data))), 0)
 
 
-class TestWebAPSimpleExample(unittest2.TestCase):
+class TestWebAPSimpleExample(unittest.TestCase):
     def setUp(self):
         self.data = r'''
         <?xml version="1.0" encoding="UTF-8"?>
@@ -74,7 +74,7 @@ class TestWebAPSimpleExample(unittest2.TestCase):
         self.assertTrue(all_the_same([s[1]['original_docno'] for s in sentences]))
 
 
-class TestWebAPTopics(unittest2.TestCase):
+class TestWebAPTopics(unittest.TestCase):
     def setUp(self):
         self.data = r'''
         { 

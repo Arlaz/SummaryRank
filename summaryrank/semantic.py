@@ -159,7 +159,7 @@ class TagmeOverlap(summaryrank.Feature):
                 #  super(TagmeAndESACosineSimilarity, self).initialize(resources)
 
         #  def _intersection(self, esa_scores, entities):
-                #  return {k:v for (k,v) in esa_scores.iteritems() if str(k) in entities}
+                #  return {k:v for (k,v) in iter(esa_scores.items()) if str(k) in entities}
 
         #  def _difference(self, esa_scores, entities, weight):
                 #  return { int(k):weight for k in entities if int(k) not in esa_scores.keys()}
@@ -336,7 +336,7 @@ def gen_tagme(argv):
                     res = tagme.tag(text, args.api_key)
                     rep = res.read()
                 except Exception as e:
-                    print >>sys.stderr, qid, e
+                    print (qid, e, file=sys.stderr)
                 out.write(qid + '\t' + rep + '\n')
                 indicator.update()
 
@@ -349,7 +349,7 @@ def gen_tagme(argv):
                     res = tagme.tag(text, args.api_key)
                     rep = res.read()
                 except Exception as e:
-                    print >>sys.stderr, (docno, id_, qid), e
+                    print ((docno, id_, qid), e, file=sys.stderr)
                 out.write('\t'.join([docno, id_, qid, rep]) + '\n')
                 indicator.update()
 
@@ -374,7 +374,7 @@ def gen_tagme(argv):
 
 # if __name__ == '__main__':
     # if len(sys.argv) < 3:
-        # print 'usage: python query-semanticizer.py <query_filename> <api-key> [text-mode]'
+        # print ('usage: python query-semanticizer.py <query_filename> <api-key> [text-mode]')
         # sys.exit(0)
     # text_mode = False
     # if (len(sys.argv) == 4 and sys.argv[3] == 'text-mode'):
@@ -384,13 +384,13 @@ def gen_tagme(argv):
       # try:
         # ids = semanticize(query, sys.argv[2], text_mode)
       # except urllib2.HTTPError as e:
-        # print >>sys.stderr, query_id, e
+        # print (query_id, e, file=sys.stderr)
         # continue
       # except urllib2.URLError as e:
-        # print >>sys.stderr, query_id, e
+        # print (query_id, e, file=sys.stderr)
         # continue
 
       # if (text_mode):
-        # print query.encode('utf-8'),'\t',string.join(ids).encode('utf-8')
+        # print (query.encode('utf-8'),'\t',string.join(ids).encode('utf-8'))
       # else:
-        # print query_id.strip(),'\t',string.join([str(x) for x in ids])
+        # print (query_id.strip(),'\t',string.join([str(x) for x in ids]))

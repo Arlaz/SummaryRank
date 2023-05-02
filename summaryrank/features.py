@@ -133,7 +133,7 @@ def extract(argv):
 
     columns = []
     for feature in features:
-        print >>sys.stderr, 'process {}'.format(feature)
+        print('process {}'.format(feature), file=sys.stderr)
         columns.append(feature.compute(model))
 
     qrels = model.load_qrels()
@@ -173,9 +173,9 @@ def contextualize(argv):
             features.append('SentenceBefore[{}]'.format(name))
             features.append('SentenceAfter[{}]'.format(name))
 
-    print '# Features in use'
+    print ('# Features in use')
     for fid, name in enumerate(features, 1):
-        print '# {}: {}'.format(fid, name)
+        print('# {}: {}'.format(fid, name))
 
     new_fids = len(features) + 1
 
@@ -236,10 +236,10 @@ def contextualize(argv):
             buffer_ = [current_fields[0], current_fields[1]]
 
             # print new_fids
-            for k, v in new_features.iteritems():
+            for k, v in iter(new_features.items()):
                 buffer_.append('{}:{}'.format(k, v))
             # print ' '.join(buffer_)
-            print ' '.join(buffer_), '#', current_comment,
+            print (' '.join(buffer_), '#', current_comment)
 
     # Special case: end of file
     current_head, current_comment = pointer3.split('# ')
@@ -271,7 +271,7 @@ def contextualize(argv):
     buffer_ = [current_fields[0], current_fields[1]]
 
     # print new_fids
-    for k, v in new_features.iteritems():
+    for k, v in iter(new_features.items()):
         buffer_.append('{}:{}'.format(k, v))
     # print ' '.join(buffer_)
-    print ' '.join(buffer_), '#', current_comment,
+    print (' '.join(buffer_), '#', current_comment)

@@ -93,9 +93,9 @@ def get_vectors(lines):
 
 def write_preamble(out, features):
     """ Print preamble """
-    print >>out, '# Features in use'
+    print ('# Features in use', file=out)
     for fid, cls in enumerate(features, 1):
-        print >>out, '# {}: {}'.format(fid, cls)
+        print ('# {}: {}'.format(fid, cls), file=out)
 
 
 def write_vectors_columnwise(out, qids, rels, docnos, columns):
@@ -107,7 +107,7 @@ def write_vectors_columnwise(out, qids, rels, docnos, columns):
     for i in range(nrows):
         row_values = [column[i] for column in columns]
         row = ' '.join(['{}:{}'.format(fid, val) for fid, val in enumerate(row_values, 1)])
-        print >>out, '{} qid:{} {} # docno:{}'.format(rels[i], qids[i], row, docnos[i])
+        print ('{} qid:{} {} # docno:{}'.format(rels[i], qids[i], row, docnos[i]), file=out)
 
 
 def describe(argv):
@@ -120,7 +120,7 @@ def describe(argv):
     rows = get_rows(_open(args.vector_file), with_preamble=True)
     preamble = next(rows)
     for line in preamble:
-        print line,
+        print (line)
 
 
 def cut(argv):
@@ -144,7 +144,7 @@ def cut(argv):
                 selector.add(int(comp))
 
     if len(selector) == 0:
-        print >>sys.stderr, 'must specify a list of fields'
+        print('must specify a list of fields', file=sys.stderr)
         return 1
 
     fids = sorted(selector)
@@ -155,12 +155,12 @@ def cut(argv):
     rows = get_rows(_open(args.vector_file), with_preamble=True)
     preamble = next(rows)
     for line in get_preamble_lines(preamble, selector, mapped):
-        print line,
+        print(line)
 
     for vector, metadata in get_vectors(rows):
         row = ' '.join(['{}:{}'.format(mapped[fid], vector[fid]) for fid in fids])
-        print '{} qid:{} {} # docno:{}'.format(
-            metadata['rel'], metadata['qid'], row, metadata['docno'])
+        print ('{} qid:{} {} # docno:{}'.format(
+            metadata['rel'], metadata['qid'], row, metadata['docno']))
 
 
 def join(argv):
@@ -171,7 +171,7 @@ def join(argv):
     args = parser.parse_args(argv)
 
     if len(args.vector_files) < 2:
-        print >>sys.stderr, 'must specify at least two vector files'
+        print('must specify at least two vector files', file=sys.stderr)
         return 1
 
     rows_list = [get_rows(_open(name), with_preamble=True) for name in args.vector_files]
@@ -189,9 +189,9 @@ def join(argv):
             trans[fid] = new_fid
         trans_list.append(trans)
 
-    print '# Features in use'
+    print('# Features in use')
     for fid, name in fid_to_name:
-        print '# {}: {}'.format(fid, name)
+        print('# {}: {}'.format(fid, name))
 
     vectors_list = [get_vectors(rows) for rows in rows_list]
     while True:
@@ -209,8 +209,8 @@ def join(argv):
         for i in range(len(v_list)):
             for fid in sorted(v_list[i]):
                 buf.append('{}:{}'.format(trans_list[i][fid], v_list[i][fid]))
-        print '{} qid:{} {} # docno:{}'.format(
-            metadata['rel'], metadata['qid'], ' '.join(buf), metadata['docno'])
+        print('{} qid:{} {} # docno:{}'.format(
+            metadata['rel'], metadata['qid'], ' '.join(buf), metadata['docno']))
 
 
 def shuffle(argv):
@@ -240,10 +240,10 @@ def shuffle(argv):
     random.shuffle(qids)
 
     # produce output
-    print ''.join(preamble),
+    print(''.join(preamble))
     for qid in qids:
         for line in buf[qid]:
-            print line,
+            print(line)
 
 
 def split(argv):
@@ -347,11 +347,11 @@ def normalize(argv):
     # second pass
     rows = get_rows(_open(args.vector_file))
     preamble = next(rows)
-    print ''.join(preamble),
+    print(''.join(preamble))
     for vector, m in get_vectors(rows):
         buf = []
         for fid in sorted(vector):
             new_value = float(vector[fid] - min_values[m['qid']][fid]) / gaps[m['qid']][fid]
             buf.append('{}:{}'.format(fid, new_value))
         row = ' '.join(buf)
-        print '{} qid:{} {} # docno:{}'.format(m['rel'], m['qid'], row, m['docno'])
+        print('{} qid:{} {} # docno:{}'.format(m['rel'], m['qid'], row, m['docno']))

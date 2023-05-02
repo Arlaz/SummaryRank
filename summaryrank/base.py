@@ -40,8 +40,8 @@ class Model(object):
 
     def list_files(self):
         """ List all the gzip'ed files """
-        return [name for name in os.listdir(self.path)
-                if name.endswith('.gz') and os.path.isfile(os.path.join(self.path, name))]
+        return ([name for name in os.listdir(self.path)
+                if name.endswith('.gz') and os.path.isfile(os.path.join(self.path, name))])
 
     def save_representation(self, name, data):
         """ Save representation """

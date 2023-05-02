@@ -50,8 +50,8 @@ GENERAL_FUNCTIONS = [
 
 def _make_command_list(functions):
     """ Prepare a formatted list of commands. """
-    return ['  {:24}{}\n'.format(name, func.__doc__.strip().splitlines()[0])
-            for name, func in functions]
+    return (['  {:24}{}\n'.format(name, func.__doc__.strip().splitlines()[0])
+            for name, func in functions])
 
 
 if __name__.endswith('__main__'):

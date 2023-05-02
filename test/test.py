@@ -1,10 +1,10 @@
 #pylint: skip-file
-import unittest2
+import unittest
 
 import sys
-from StringIO import StringIO
+from io import StringIO
 
-class TestModule(unittest2.TestCase):
+class TestModule(unittest.TestCase):
     def test_import(self):
         import summaryrank
 

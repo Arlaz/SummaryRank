@@ -96,7 +96,7 @@ def get_sentences(tarball, qids, qrels, charset=None):
             if alt in names:
                 filename = alt
             else:
-                print >>sys.stderr, 'warning: cannot find {}'.format(filename)
+                print('warning: cannot find {}'.format(filename), file=sys.stderr)
                 continue
 
         in_ = tarball.extractfile(filename)

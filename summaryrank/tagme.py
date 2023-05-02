@@ -2,8 +2,6 @@
 TAGME restful API
 """
 import urllib
-import urllib2
-
 
 TAGME_TAG_URL = 'http://tagme.di.unipi.it/tag'
 
@@ -18,7 +16,7 @@ def tag(text, key, **kwargs):
             param[attr] = str(val).lower() if isinstance(val, bool) else str(val)
     # FIXME: dirty fix
     for k, v in param.items():
-        param[k] = unicode(v, 'utf8').encode('utf8')
-    data = urllib.urlencode(param)
-    request = urllib2.Request(TAGME_TAG_URL, data)
-    return urllib2.urlopen(request)
+        param[k] = v.encode('utf8')
+    data = urllib.parse.urlencode(param).encode('utf-8')
+    request = urllib.request.Request(TAGME_TAG_URL, data)
+    return urllib.request.urlopen(request).read().decode('utf-8')

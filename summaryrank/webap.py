@@ -77,7 +77,8 @@ def get_sentences(iterable):
         elif action == 'end':
             if elem.tag == 'SENTENCE':
                 sentence_count += 1
-                yield (unicode(elem.text),
+
+                yield (elem.text,
                        {'id': str(sentence_count),
                         'rel': str(rel),
                         'docno': metadata['DOCNO'],

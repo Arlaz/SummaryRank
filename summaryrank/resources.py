@@ -414,12 +414,12 @@ class ESAVectors:
             else:
                 redis_strings = ESARedisStrings(host=esa, k=k)
 
-            print >>sys.stderr, "Wait until redis server '{}' finishes loading... ".format(esa),
+            print ("Wait until redis server '{}' finishes loading... ".format(esa), file=sys.stderr)
             while True:
                 if redis_strings.is_loading():
                     time.sleep(1)
                 else:
-                    print >>sys.stderr, 'Done'
+                    print ('Done', file=sys.stderr)
                     break
 
             return redis_strings

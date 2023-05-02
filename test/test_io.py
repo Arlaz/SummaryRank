@@ -1,11 +1,11 @@
 #pylint: skip-file
-import unittest2
-from StringIO import StringIO
+import unittest
+from io import StringIO
 
 from summaryrank.io import SVMLight
 
 
-class TestSVMLight(unittest2.TestCase):
+class TestSVMLight(unittest.TestCase):
     def setUp(self):
         self.data = r'''
 # 1: SentenceLength()
