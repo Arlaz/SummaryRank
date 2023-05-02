@@ -1,8 +1,9 @@
-#pylint: skip-file
+# pylint: skip-file
 import unittest
 
 import sys
 from io import StringIO
+
 
 class TestModule(unittest.TestCase):
     def test_import(self):

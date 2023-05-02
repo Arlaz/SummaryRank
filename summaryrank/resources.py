@@ -18,7 +18,7 @@ from krovetzstemmer import Stemmer as KrovetzStemmer
 
 
 INQUERY_STOPLIST = set(
-    r''' a about above according across after afterwards again against albeit
+    r""" a about above according across after afterwards again against albeit
     all almost alone along already also although always am among amongst an and
     another any anybody anyhow anyone anything anyway anywhere apart are around
     as at av be became because become becomes becoming been before beforehand
@@ -54,43 +54,49 @@ INQUERY_STOPLIST = set(
     whereto whereunto whereupon wherever wherewith whether whew which whichever
     whichsoever while whilst whither who whoever whole whom whomever whomsoever
     whose whosoever why will wilt with within without worse worst would wow ye
-    year yet yipee you your yours yourself yourselves '''.split())
+    year yet yipee you your yours yourself yourselves """.split()
+)
 
 
 class FrequencyStats(object):
-    """ Corpus-wide frequency statistics """
+    """Corpus-wide frequency statistics"""
 
     def cf(self, term):
-        """ Return the collection (term) frequency """
+        """Return the collection (term) frequency"""
         pass
+
     def df(self, term):
-        """ Return the document frequency """
+        """Return the document frequency"""
         pass
+
     def collection_length(self):
-        """ Return the total number of terms in the collection """
+        """Return the total number of terms in the collection"""
         pass
+
     def num_docs(self):
-        """ Return the number of documents in the collection """
+        """Return the number of documents in the collection"""
         pass
 
 
 class Index(FrequencyStats):
-    """ Index object """
+    """Index object"""
 
     def dump_stats(self):
-        """ Dump stats """
+        """Dump stats"""
         pass
+
     def dump_term_stats(self):
-        """ Dump term stats """
+        """Dump term stats"""
         pass
+
     @classmethod
     def is_valid_path(cls, path):
-        """ Check if the index path is valid """
+        """Check if the index path is valid"""
         pass
 
 
 class IndexDump(FrequencyStats):
-    """ A proxy that pulls data from an offline index dump """
+    """A proxy that pulls data from an offline index dump"""
 
     def __init__(self, collection_length, num_docs, cfdf):
         self._collection_length = collection_length
@@ -115,33 +121,37 @@ class IndexDump(FrequencyStats):
 
     @classmethod
     def dump(cls, path, index, term_set=None):
-        """ Retrieve/filter term stats and save to file """
+        """Retrieve/filter term stats and save to file"""
         if term_set:
             to_include = lambda x: x in term_set
         else:
             to_include = lambda x: True
 
-        with gzip.open(path, 'wb') as out, SaveFileLineIndicator(path) as indicator:
-            out.write('\t'.join(['__INDEX__', str(index.collection_length()),
-                                 str(index.num_docs())]) + '\n')
+        with gzip.open(path, "wb") as out, SaveFileLineIndicator(path) as indicator:
+            out.write(
+                "\t".join(
+                    ["__INDEX__", str(index.collection_length()), str(index.num_docs())]
+                )
+                + "\n"
+            )
             indicator.update()
 
             for term, cf, df in index.dump_term_stats():
                 if to_include(term):
-                    out.write('\t'.join([term, cf, df]) + '\n')
+                    out.write("\t".join([term, cf, df]) + "\n")
                     indicator.update()
 
     @classmethod
     def load(cls, path):
-        """ Load saved term stats """
+        """Load saved term stats"""
         with gzip.open(path) as in_, LoadFileLineIndicator(path) as indicator:
             firstline = next(in_)
-            _, collection_length, num_docs = firstline.rstrip('\n').split('\t', 2)
+            _, collection_length, num_docs = firstline.rstrip("\n").split("\t", 2)
             indicator.update()
 
             cfdf = dict()
             for line in in_:
-                term, cf, df = line.rstrip('\n').split('\t', 2)
+                term, cf, df = line.rstrip("\n").split("\t", 2)
                 cfdf[term] = (int(cf), int(df))
                 indicator.update()
 
@@ -149,55 +159,57 @@ class IndexDump(FrequencyStats):
 
 
 class IndriIndex(Index):
-    """ A proxy that pulls raw data from a working Indri index """
+    """A proxy that pulls raw data from a working Indri index"""
 
-    def __init__(self, path, cmdpath='dumpindex'):
+    def __init__(self, path, cmdpath="dumpindex"):
         self.path = path
         self.cmdpath = cmdpath
 
         stats = self.dump_stats()
-        self._collection_length = int(stats['total terms'])
-        self._num_docs = int(stats['documents'])
+        self._collection_length = int(stats["total terms"])
+        self._num_docs = int(stats["documents"])
 
     @memoize
     def _get_term_stats(self, term):
-        """ Get term stats (internal method) """
-        p = subprocess.Popen([self.cmdpath, self.path, 'xcount', term],
-                             stdout=subprocess.PIPE)
+        """Get term stats (internal method)"""
+        p = subprocess.Popen(
+            [self.cmdpath, self.path, "xcount", term], stdout=subprocess.PIPE
+        )
         output = p.communicate()[0]
-        cf = int(output.strip().split(':')[1])
+        cf = int(output.strip().split(":")[1])
 
-        p = subprocess.Popen([self.cmdpath, self.path, 'dxcount', term],
-                             stdout=subprocess.PIPE)
+        p = subprocess.Popen(
+            [self.cmdpath, self.path, "dxcount", term], stdout=subprocess.PIPE
+        )
         output = p.communicate()[0]
-        df = int(output.strip().split(':')[1])
-        return {'cf': cf, 'df': df}
+        df = int(output.strip().split(":")[1])
+        return {"cf": cf, "df": df}
 
     def dump_stats(self):
-        """ Dump stats """
-        p = subprocess.Popen([self.cmdpath, self.path, 'stats'],
-                             stdout=subprocess.PIPE)
+        """Dump stats"""
+        p = subprocess.Popen([self.cmdpath, self.path, "stats"], stdout=subprocess.PIPE)
         output = p.communicate()[0]
         stats = dict()
         for line in output.splitlines()[1:]:
-            k, v = line.split(':', 1)
+            k, v = line.split(":", 1)
             stats[k.strip()] = v.strip()
         return stats
 
     def dump_term_stats(self):
-        """ Dump term stats """
-        p = subprocess.Popen([self.cmdpath, self.path, 'vocabulary'],
-                             stdout=subprocess.PIPE)
+        """Dump term stats"""
+        p = subprocess.Popen(
+            [self.cmdpath, self.path, "vocabulary"], stdout=subprocess.PIPE
+        )
         next(p.stdout)
         for line in p.stdout:
             term, cf, df = line.rstrip().split(None, 2)
             yield term, cf, df
 
     def cf(self, term):
-        return self._get_term_stats(term)['cf']
+        return self._get_term_stats(term)["cf"]
 
     def df(self, term):
-        return self._get_term_stats(term)['df']
+        return self._get_term_stats(term)["df"]
 
     def collection_length(self):
         return self._collection_length
@@ -207,56 +219,64 @@ class IndriIndex(Index):
 
     @classmethod
     def is_valid_path(cls, path):
-        valid_names = set(('collection', 'deleted', 'index', 'manifest'))
+        valid_names = set(("collection", "deleted", "index", "manifest"))
         all_names = set(os.listdir(path))
         return valid_names.issubset(all_names)
 
 
 class GalagoIndex(Index):
-    """ A proxy that pulls raw data from a working Galago index """
+    """A proxy that pulls raw data from a working Galago index"""
 
-    def __init__(self, path, part, cmdpath='galago'):
+    def __init__(self, path, part, cmdpath="galago"):
         self.path = path
         self.part = part
         self.cmdpath = cmdpath
 
         stats = self.dump_stats()
-        self._collection_length = int(stats[part]['statistics/collectionLength'])
-        self._num_docs = int(stats[part]['statistics/highestDocumentCount'])
+        self._collection_length = int(stats[part]["statistics/collectionLength"])
+        self._num_docs = int(stats[part]["statistics/highestDocumentCount"])
 
     @memoize
     def _get_term_stats(self, term):
-        """ Get term stats (internal method) """
-        p = subprocess.Popen([self.cmdpath, 'dump-key-value',
-                              os.path.join(self.path, self.part), term],
-                             stdout=subprocess.PIPE)
+        """Get term stats (internal method)"""
+        p = subprocess.Popen(
+            [self.cmdpath, "dump-key-value", os.path.join(self.path, self.part), term],
+            stdout=subprocess.PIPE,
+        )
         output = p.communicate()[0]
-        freqs = [line.count(',') - 1 for line in output.splitlines()[1:]]
-        return {'cf': sum(freqs), 'df': len(freqs)}
+        freqs = [line.count(",") - 1 for line in output.splitlines()[1:]]
+        return {"cf": sum(freqs), "df": len(freqs)}
 
     def dump_stats(self):
-        """ Dump stats """
-        p = subprocess.Popen([self.cmdpath, 'stats', '--index={}'.format(self.path),
-                              '--part={}'.format(self.part)],
-                             stdout=subprocess.PIPE)
+        """Dump stats"""
+        p = subprocess.Popen(
+            [
+                self.cmdpath,
+                "stats",
+                "--index={}".format(self.path),
+                "--part={}".format(self.part),
+            ],
+            stdout=subprocess.PIPE,
+        )
         output = p.communicate()[0]
         stats = json.loads(output)
         return stats
 
     def dump_term_stats(self):
-        """ Dump term stats """
+        """Dump term stats"""
         part_path = os.path.join(self.path, self.part)
-        p = subprocess.Popen([self.cmdpath, 'dump-term-stats', part_path],
-                             stdout=subprocess.PIPE)
+        p = subprocess.Popen(
+            [self.cmdpath, "dump-term-stats", part_path], stdout=subprocess.PIPE
+        )
         for line in p.stdout:
-            term, cf, df = line.rstrip('\n').split('\t', 2)
+            term, cf, df = line.rstrip("\n").split("\t", 2)
             yield term, cf, df
 
     def cf(self, term):
-        return self._get_term_stats(term)['cf']
+        return self._get_term_stats(term)["cf"]
 
     def df(self, term):
-        return self._get_term_stats(term)['df']
+        return self._get_term_stats(term)["df"]
 
     def collection_length(self):
         return self._collection_length
@@ -266,74 +286,77 @@ class GalagoIndex(Index):
 
     @classmethod
     def is_valid_path(cls, path):
-        valid_names = set(('buildManifest.json', 'corpus', 'lengths', 'names', 'postings'))
+        valid_names = set(
+            ("buildManifest.json", "corpus", "lengths", "names", "postings")
+        )
         all_names = set(os.listdir(path))
         return valid_names.issubset(all_names)
 
 
 # class GalagoIndexDump(FrequencyStats):
-    # """ A proxy that pulls data from an offline index dump """
+# """ A proxy that pulls data from an offline index dump """
 
-    # def __init__(self, collection_length, num_docs, cfdf):
-        # self._collection_length = collection_length
-        # self._num_docs = num_docs
-        # self._cfdf = cfdf
+# def __init__(self, collection_length, num_docs, cfdf):
+# self._collection_length = collection_length
+# self._num_docs = num_docs
+# self._cfdf = cfdf
 
-    # def cf(self, term):
-        # if term not in self._cfdf:
-            # return 0
-        # return self._cfdf[term][0]
+# def cf(self, term):
+# if term not in self._cfdf:
+# return 0
+# return self._cfdf[term][0]
 
-    # def df(self, term):
-        # if term not in self._cfdf:
-            # return 0
-        # return self._cfdf[term][1]
+# def df(self, term):
+# if term not in self._cfdf:
+# return 0
+# return self._cfdf[term][1]
 
-    # def collection_length(self):
-        # return self._collection_length
+# def collection_length(self):
+# return self._collection_length
 
-    # def num_docs(self):
-        # return self._num_docs
+# def num_docs(self):
+# return self._num_docs
 
-    # @classmethod
-    # def dump(cls, path, index_path, index_part, term_set=None):
-        # """ Retrieve/filter term stats and save to file """
-        # if term_set:
-            # to_include = lambda x: x in term_set
-        # else:
-            # to_include = lambda x: True
+# @classmethod
+# def dump(cls, path, index_path, index_part, term_set=None):
+# """ Retrieve/filter term stats and save to file """
+# if term_set:
+# to_include = lambda x: x in term_set
+# else:
+# to_include = lambda x: True
 
-        # with gzip.open(path, 'wb') as out, SaveFileLineIndicator(path) as indicator:
-            # stats = GalagoIndex.dump_stats(index_path, index_part)
-            # collection_length = stats[index_part]['statistics/collectionLength']
-            # num_docs = stats[index_part]['statistics/highestDocumentCount']
-            # out.write('\t'.join(['__INDEX__', str(collection_length), str(num_docs)]) + '\n')
-            # indicator.update()
+# with gzip.open(path, 'wb') as out, SaveFileLineIndicator(path) as indicator:
+# stats = GalagoIndex.dump_stats(index_path, index_part)
+# collection_length = stats[index_part]['statistics/collectionLength']
+# num_docs = stats[index_part]['statistics/highestDocumentCount']
+# out.write('\t'.join(['__INDEX__', str(collection_length), str(num_docs)]) + '\n')
+# indicator.update()
 
-            # for term, cf, df in GalagoIndex.dump_term_stats(index_path, index_part):
-                # if to_include(term):
-                    # out.write('\t'.join([term, cf, df]) + '\n')
-                    # indicator.update()
+# for term, cf, df in GalagoIndex.dump_term_stats(index_path, index_part):
+# if to_include(term):
+# out.write('\t'.join([term, cf, df]) + '\n')
+# indicator.update()
 
-    # @classmethod
-    # def load(cls, path):
-        # """ Load saved term stats """
-        # with gzip.open(path) as in_, LoadFileLineIndicator(path) as indicator:
-            # firstline = next(in_)
-            # _, collection_length, num_docs = firstline.rstrip('\n').split('\t', 2)
-            # indicator.update()
+# @classmethod
+# def load(cls, path):
+# """ Load saved term stats """
+# with gzip.open(path) as in_, LoadFileLineIndicator(path) as indicator:
+# firstline = next(in_)
+# _, collection_length, num_docs = firstline.rstrip('\n').split('\t', 2)
+# indicator.update()
 
-            # cfdf = dict()
-            # for line in in_:
-                # term, cf, df = line.rstrip('\n').split('\t', 2)
-                # cfdf[term] = (int(cf), int(df))
-                # indicator.update()
+# cfdf = dict()
+# for line in in_:
+# term, cf, df = line.rstrip('\n').split('\t', 2)
+# cfdf[term] = (int(cf), int(df))
+# indicator.update()
 
-        # return cls(int(collection_length), int(num_docs), cfdf)
+# return cls(int(collection_length), int(num_docs), cfdf)
 
 
 class RedisStrings(object):
-    """ a dict-like wrapper for redis strings  """
+    """a dict-like wrapper for redis strings"""
+
     def __init__(self, *args, **kwargs):
         self.redis = redis.StrictRedis(*args, **kwargs)
 
@@ -354,11 +377,11 @@ class RedisStrings(object):
         return self.redis.exists(key)
 
     def is_loading(self):
-        return bool(self.redis.info()['loading'])
+        return bool(self.redis.info()["loading"])
 
 
 def parse_value(value, k=None):
-    pairs = [comp.split(':', 1) for comp in value.split()]
+    pairs = [comp.split(":", 1) for comp in value.split()]
     if k:
         pairs = pairs[:k]
     return [(int(pair[0]), float(pair[1])) for pair in pairs]
@@ -366,9 +389,9 @@ def parse_value(value, k=None):
 
 class ESARedisStrings(RedisStrings):
     def __init__(self, *args, **kwargs):
-        if 'k' in kwargs:
-            self.k = kwargs['k']
-            del kwargs['k']
+        if "k" in kwargs:
+            self.k = kwargs["k"]
+            del kwargs["k"]
         else:
             self.k = None
 
@@ -396,30 +419,33 @@ class ESAVectors:
 
     def _load(self, esa, k=None):
         if os.path.isfile(esa):
-            opener = gzip.open if esa.endswith('.gz') else open
+            opener = gzip.open if esa.endswith(".gz") else open
             vectors = dict()
             with opener(esa) as file_input:
                 for line in file_input:
                     components = line.split()
                     name = components[0]
-                    pairs = [comp.split(':', 1) for comp in components[1:]]
+                    pairs = [comp.split(":", 1) for comp in components[1:]]
                     if k:
                         pairs = pairs[:k]
                     vectors[name] = [(int(pair[0]), float(pair[1])) for pair in pairs]
             return vectors
         else:
-            if ':' in esa:
-                host, port = esa.split(':', 1)
+            if ":" in esa:
+                host, port = esa.split(":", 1)
                 redis_strings = ESARedisStrings(host=host, port=int(port), k=k)
             else:
                 redis_strings = ESARedisStrings(host=esa, k=k)
 
-            print ("Wait until redis server '{}' finishes loading... ".format(esa), file=sys.stderr)
+            print(
+                "Wait until redis server '{}' finishes loading... ".format(esa),
+                file=sys.stderr,
+            )
             while True:
                 if redis_strings.is_loading():
                     time.sleep(1)
                 else:
-                    print ('Done', file=sys.stderr)
+                    print("Done", file=sys.stderr)
                     break
 
             return redis_strings
@@ -433,31 +459,31 @@ class TAGME:
         self.weight = weight
 
     def _load_file(self, filename):
-        opener = gzip.open if filename.endswith('.gz') else open
+        opener = gzip.open if filename.endswith(".gz") else open
         entities = dict()
         with opener(filename) as csvfile:
-                reader = csv.reader(csvfile, delimiter='\t',quoting=csv.QUOTE_NONE)
-                for row in reader:
-                        qid = row[0].strip()
-                        query_entitites = row[1].split()
-                        entities[qid] = query_entitites
+            reader = csv.reader(csvfile, delimiter="\t", quoting=csv.QUOTE_NONE)
+            for row in reader:
+                qid = row[0].strip()
+                query_entitites = row[1].split()
+                entities[qid] = query_entitites
         return entities
 
     def _load_sentence_file(self, filename):
         csv.field_size_limit(sys.maxsize)
-        opener = gzip.open if filename.endswith('.gz') else open
+        opener = gzip.open if filename.endswith(".gz") else open
         entities = dict()
         with opener(filename) as csvfile:
-                reader = csv.reader(csvfile, delimiter='\t',quoting=csv.QUOTE_NONE)
-                for row in reader:
-                        qid = row[0].strip()
-                        sentence_json = row[1].strip()
-                        if sentence_json:
-                                payload = json.loads(sentence_json)
-                                annotations = payload['annotations']
-                                sentence_entities = [ x['id'] for x in annotations]
-                                sentence_entities = [ str(x) for x in sentence_entities]
-                                entities[qid] = sentence_entities
-                        else:
-                                entities[qid] = []
+            reader = csv.reader(csvfile, delimiter="\t", quoting=csv.QUOTE_NONE)
+            for row in reader:
+                qid = row[0].strip()
+                sentence_json = row[1].strip()
+                if sentence_json:
+                    payload = json.loads(sentence_json)
+                    annotations = payload["annotations"]
+                    sentence_entities = [x["id"] for x in annotations]
+                    sentence_entities = [str(x) for x in sentence_entities]
+                    entities[qid] = sentence_entities
+                else:
+                    entities[qid] = []
         return entities
